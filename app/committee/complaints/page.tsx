@@ -57,7 +57,7 @@ const ComplaintsPage = () => {
         return (
             complaint.id.toLowerCase().includes(query) ||
             complaint.creator.fullName.toLowerCase().includes(query) ||
-            complaint.creator.block.toLowerCase().includes(query) ||
+            complaint.creator.houseNumber.block.toLowerCase().includes(query) ||
             complaint.issue.toLowerCase().includes(query)
         );
     });
