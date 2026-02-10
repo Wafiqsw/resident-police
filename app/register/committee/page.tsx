@@ -11,6 +11,7 @@ export default function CommitteeRegisterPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
+        fullName: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -29,6 +30,7 @@ export default function CommitteeRegisterPage() {
 
         try {
             const committeeProfile: Omit<CommitteeMember, 'id'> = {
+                fullName: formData.fullName,
                 email: formData.email,
                 role: 'committee',
             };
@@ -68,6 +70,18 @@ export default function CommitteeRegisterPage() {
                 )}
 
                 <form onSubmit={handleRegister} className="space-y-6">
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
+                        <input
+                            type="text"
+                            required
+                            placeholder="En. Ahmad bin Ali"
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all"
+                            value={formData.fullName}
+                            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                        />
+                    </div>
+
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
                         <input

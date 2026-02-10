@@ -16,6 +16,4 @@ export { default as EditProfileModal } from './EditProfileModal';
 export { default as SubmitComplaintModal } from './SubmitComplaintModal';
 export { default as ResidentComplaintDetailModal } from './ResidentComplaintDetailModal';
 export { default as EditComplaintModal } from './EditComplaintModal';
-export { default as BlockSelect } from './BlockSelect';
-export { default as HouseSelect } from './HouseSelect';
 export { default as UnitSelector } from './UnitSelector';
