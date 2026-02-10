@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper: Check if user is logged in
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: Check if file is an image
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    // Complaints images:
+    // - Owners can upload/update their own images
+    // - Authenticated users (residents & committee) can read them
+    match /complaints/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId);
+    }
+
+    // Announcements images:
+    // - Only committee can upload/update (handled by app logic, but rules enforce auth for now)
+    // - Everyone authenticated can read
+    match /announcements/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Simpler for now, can be restricted by role if needed
+    }
+  }
+}

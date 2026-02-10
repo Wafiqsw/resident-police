@@ -1,0 +1,96 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isCommittee() {
+      return isAuthenticated() && getUserData().role == 'committee';
+    }
+    
+    function isResident() {
+      return isAuthenticated() && getUserData().role == 'resident';
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Anyone authenticated can read user profiles (needed for displaying creator info, etc.)
+      allow read: if isAuthenticated();
+      
+      // Users can create their own profile during registration
+      allow create: if isOwner(userId);
+      
+      // Users can update their own profile, and committee members can update any profile
+      allow update: if isOwner(userId) || isCommittee();
+      
+      // Only committee members can delete user profiles
+      allow delete: if isCommittee();
+    }
+    
+    // Complaints collection
+    match /complaints/{complaintId} {
+      // Anyone authenticated can read complaints
+      allow read: if isAuthenticated();
+      
+      // Residents can create complaints
+      allow create: if isResident() && 
+                       request.resource.data.creator.id == request.auth.uid;
+      
+      // Residents can update their own pending complaints
+      // Committee can update any complaint (to change status, add responses, etc.)
+      allow update: if (isResident() && 
+                        resource.data.creator.id == request.auth.uid && 
+                        resource.data.status == 'pending') ||
+                       isCommittee();
+      
+      // Residents can delete their own pending complaints
+      // Committee can delete any complaint
+      allow delete: if (isResident() && 
+                        resource.data.creator.id == request.auth.uid && 
+                        resource.data.status == 'pending') ||
+                       isCommittee();
+    }
+    
+    // Announcements collection
+    match /announcements/{announcementId} {
+      // Anyone authenticated can read announcements
+      allow read: if isAuthenticated();
+      
+      // Only committee members can create announcements
+      allow create: if isCommittee();
+      
+      // Only committee members can update announcements
+      allow update: if isCommittee();
+      
+      // Only committee members can delete announcements
+      allow delete: if isCommittee();
+    }
+    
+    // Units collection
+    match /units/{unitId} {
+      // Anyone authenticated can read unit occupancy
+      allow read: if isAuthenticated();
+      
+      // Residents and Committee can update unit occupancy
+      // We allow authenticated users to write here as syncUnitOccupancy is part of the registration flow
+      allow write: if isAuthenticated();
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
