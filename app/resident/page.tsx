@@ -79,7 +79,7 @@ const ResidentDashboard = () => {
         }
     };
 
-    if (authLoading || isLoading) {
+    if (authLoading || isLoading || !profile) {
         return (
             <Layout userType="resident">
                 <div className="flex items-center justify-center min-h-[60vh]">
